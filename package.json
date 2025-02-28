@@ -10,8 +10,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.33",
     "@langchain/core": "^0.3.40",
     "@langchain/openai": "^0.4.4",
-    "langchain": "^0.3.19"
+    "langchain": "^0.3.19",
+    "pdf-parse": "^1.1.1"
   }
 }
