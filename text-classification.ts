@@ -1,9 +1,9 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatGroq } from "@langchain/groq";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 
-const llm = new ChatOpenAI({
-  model: "gpt-4o-mini",
+const llm = new ChatGroq({
+  model: "mixtral-8x7b-32768",
   temperature: 0,
 });
 
@@ -22,8 +22,8 @@ const classificationSchema = z.object({
   aggressiveness: z
     .number()
     .int()
-    // .min(1) // do not work on openai model
-    // .max(10) // do not work on openai model
+    .min(1) // do not work on openai model
+    .max(10) // do not work on openai model
     .describe("How aggressive the text is on a scale from 1 to 10"),
   language: z.string().describe("The language the text is written in"),
 });
