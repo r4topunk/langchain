@@ -21,135 +21,135 @@ const llm = new ChatGroq({
   temperature: 0.01,
 });
 
-// const result_1 = await llm.invoke([
-//   {
-//     role: "user",
-//     content: "hi im r4to",
-//   },
-// ]);
-// console.log("result_1 =>", result_1.content);
+const result_1 = await llm.invoke([
+  {
+    role: "user",
+    content: "hi im r4to",
+  },
+]);
+console.log("result_1 =>", result_1.content);
 
-// const result_2 = await llm.invoke([
-//   {
-//     role: "user",
-//     content: "what's my name?",
-//   },
-// ]);
-// console.log("result_2 =>", result_2.content);
+const result_2 = await llm.invoke([
+  {
+    role: "user",
+    content: "what's my name?",
+  },
+]);
+console.log("result_2 =>", result_2.content);
 
-// const result_3 = await llm.invoke([
-//   { role: "user", content: "hi!, i'm r4to" },
-//   { role: "assistant", content: "hi r4to!, how can I assist you today?" },
-//   { role: "user", content: "what's my name?" },
-// ]);
-// console.log("result_3 =>", result_3.content);
+const result_3 = await llm.invoke([
+  { role: "user", content: "hi!, i'm r4to" },
+  { role: "assistant", content: "hi r4to!, how can I assist you today?" },
+  { role: "user", content: "what's my name?" },
+]);
+console.log("result_3 =>", result_3.content);
 
-// const callModel = async (state: typeof MessagesAnnotation.State) => {
-//   const response = await llm.invoke(state.messages);
-//   return { messages: response };
-// };
+const callModel = async (state: typeof MessagesAnnotation.State) => {
+  const response = await llm.invoke(state.messages);
+  return { messages: response };
+};
 
-// const workflow = new StateGraph(MessagesAnnotation)
-//   .addNode("model", callModel)
-//   .addEdge(START, "model")
-//   .addEdge("model", END);
+const workflow = new StateGraph(MessagesAnnotation)
+  .addNode("model", callModel)
+  .addEdge(START, "model")
+  .addEdge("model", END);
 
-// const memory = new MemorySaver();
-// const app = workflow.compile({ checkpointer: memory });
+const memory = new MemorySaver();
+const app = workflow.compile({ checkpointer: memory });
 
-// const config_1 = { configurable: { thread_id: uuidv4() } };
-// console.log("config =>", config_1);
+const config_1 = { configurable: { thread_id: uuidv4() } };
+console.log("config =>", config_1);
 
-// const input_1 = [
-//   {
-//     role: "user",
-//     content: "hi! I'm r4to",
-//   },
-// ];
-// const output_1 = await app.invoke({ messages: input_1 }, config_1);
-// console.log(
-//   "output_1 =>",
-//   output_1.messages[output_1.messages.length - 1].content
-// );
+const input_1 = [
+  {
+    role: "user",
+    content: "hi! I'm r4to",
+  },
+];
+const output_1 = await app.invoke({ messages: input_1 }, config_1);
+console.log(
+  "output_1 =>",
+  output_1.messages[output_1.messages.length - 1].content
+);
 
-// const input_2 = [
-//   {
-//     role: "user",
-//     content: "what's my name?",
-//   },
-// ];
-// const output_2 = await app.invoke({ messages: input_2 }, config_1);
-// console.log(
-//   "output_2 =>",
-//   output_2.messages[output_2.messages.length - 1].content
-// );
+const input_2 = [
+  {
+    role: "user",
+    content: "what's my name?",
+  },
+];
+const output_2 = await app.invoke({ messages: input_2 }, config_1);
+console.log(
+  "output_2 =>",
+  output_2.messages[output_2.messages.length - 1].content
+);
 
-// const config_2 = { configurable: { thread_id: uuidv4() } };
-// console.log("config_2 =>", config_2);
+const config_2 = { configurable: { thread_id: uuidv4() } };
+console.log("config_2 =>", config_2);
 
-// const input_3 = [
-//   {
-//     role: "user",
-//     content: "what's my name?",
-//   },
-// ];
-// const output_3 = await app.invoke({ messages: input_3 }, config_2);
-// console.log(
-//   "output_3 =>",
-//   output_3.messages[output_3.messages.length - 1].content
-// );
+const input_3 = [
+  {
+    role: "user",
+    content: "what's my name?",
+  },
+];
+const output_3 = await app.invoke({ messages: input_3 }, config_2);
+console.log(
+  "output_3 =>",
+  output_3.messages[output_3.messages.length - 1].content
+);
 
-// const output_4 = await app.invoke({ messages: input_2 }, config_1);
-// console.log(
-//   "output_4 =>",
-//   output_4.messages[output_4.messages.length - 1].content
-// );
+const output_4 = await app.invoke({ messages: input_2 }, config_1);
+console.log(
+  "output_4 =>",
+  output_4.messages[output_4.messages.length - 1].content
+);
 
-// const promptTemplate = ChatPromptTemplate.fromMessages([
-//   [
-//     "system",
-//     "You talk like a pirate. Answer all questions to the best of your ability.",
-//   ],
-//   ["placeholder", "{messages}"],
-// ]);
+const promptTemplate = ChatPromptTemplate.fromMessages([
+  [
+    "system",
+    "You talk like a pirate. Answer all questions to the best of your ability.",
+  ],
+  ["placeholder", "{messages}"],
+]);
 
-// const callModel_2 = async (state: typeof MessagesAnnotation.State) => {
-//   const prompt = await promptTemplate.invoke(state);
-//   const response = await llm.invoke(prompt);
-//   return { messages: [response] };
-// };
+const callModel_2 = async (state: typeof MessagesAnnotation.State) => {
+  const prompt = await promptTemplate.invoke(state);
+  const response = await llm.invoke(prompt);
+  return { messages: [response] };
+};
 
-// const workflow_2 = new StateGraph(MessagesAnnotation)
-//   .addNode("model", callModel_2)
-//   .addEdge(START, "model")
-//   .addEdge("model", END);
+const workflow_2 = new StateGraph(MessagesAnnotation)
+  .addNode("model", callModel_2)
+  .addEdge(START, "model")
+  .addEdge("model", END);
 
-// const app_2 = workflow_2.compile({ checkpointer: new MemorySaver() });
+const app_2 = workflow_2.compile({ checkpointer: new MemorySaver() });
 
-// const config_3 = { configurable: { thread_id: uuidv4() } };
-// const input_4 = [
-//   {
-//     role: "user",
-//     content: "hi, I'm Jim",
-//   },
-// ];
-// const output_5 = await app_2.invoke({ messages: input_4 }, config_3);
-// console.log(
-//   "output_5 =>",
-//   output_5.messages[output_5.messages.length - 1].content
-// );
+const config_3 = { configurable: { thread_id: uuidv4() } };
+const input_4 = [
+  {
+    role: "user",
+    content: "hi, I'm Jim",
+  },
+];
+const output_5 = await app_2.invoke({ messages: input_4 }, config_3);
+console.log(
+  "output_5 =>",
+  output_5.messages[output_5.messages.length - 1].content
+);
 
-// const input_5 = [
-//   {
-//     role: "user",
-//     content: "what is my name?",
-//   },
-// ];
-// const output_6 = await app_2.invoke({ messages: input_5 }, config_3);
-// console.log(
-//   "output_6 =>",
-//   output_6.messages[output_6.messages.length - 1].content
-// );
+const input_5 = [
+  {
+    role: "user",
+    content: "what is my name?",
+  },
+];
+const output_6 = await app_2.invoke({ messages: input_5 }, config_3);
+console.log(
+  "output_6 =>",
+  output_6.messages[output_6.messages.length - 1].content
+);
 
 const promptTemplate_2 = ChatPromptTemplate.fromMessages([
   [
@@ -164,48 +164,48 @@ const GraphAnnotation = Annotation.Root({
   language: Annotation<string>(),
 });
 
-// const callModel_3 = async (state: typeof GraphAnnotation.State) => {
-//   const prompt = await promptTemplate_2.invoke(state);
-//   const response = await llm.invoke(prompt);
-//   return { messages: [response] };
-// };
+const callModel_3 = async (state: typeof GraphAnnotation.State) => {
+  const prompt = await promptTemplate_2.invoke(state);
+  const response = await llm.invoke(prompt);
+  return { messages: [response] };
+};
 
-// const workflow_3 = new StateGraph(GraphAnnotation)
-//   .addNode("model", callModel_3)
-//   .addEdge(START, "model")
-//   .addEdge("model", END);
+const workflow_3 = new StateGraph(GraphAnnotation)
+  .addNode("model", callModel_3)
+  .addEdge(START, "model")
+  .addEdge("model", END);
 
-// const app_3 = workflow_3.compile({ checkpointer: new MemorySaver() });
+const app_3 = workflow_3.compile({ checkpointer: new MemorySaver() });
 
-// const config_4 = { configurable: { thread_id: uuidv4() } };
-// const input_6 = {
-//   messages: [
-//     {
-//       role: "user",
-//       content: "hi im bob",
-//     },
-//   ],
-//   language: "Spanish",
-// };
-// const output_7 = await app_3.invoke(input_6, config_4);
-// console.log(
-//   "output_7 =>",
-//   output_7.messages[output_7.messages.length - 1].content
-// );
+const config_4 = { configurable: { thread_id: uuidv4() } };
+const input_6 = {
+  messages: [
+    {
+      role: "user",
+      content: "hi im bob",
+    },
+  ],
+  language: "Spanish",
+};
+const output_7 = await app_3.invoke(input_6, config_4);
+console.log(
+  "output_7 =>",
+  output_7.messages[output_7.messages.length - 1].content
+);
 
-// const input_7 = {
-//   messages: [
-//     {
-//       role: "user",
-//       content: "what's my name?",
-//     },
-//   ],
-// };
-// const output_8 = await app_3.invoke(input_7, config_4);
-// console.log(
-//   "output_8 =>",
-//   output_8.messages[output_8.messages.length - 1].content
-// );
+const input_7 = {
+  messages: [
+    {
+      role: "user",
+      content: "what's my name?",
+    },
+  ],
+};
+const output_8 = await app_3.invoke(input_7, config_4);
+console.log(
+  "output_8 =>",
+  output_8.messages[output_8.messages.length - 1].content
+);
 
 const trimmer = trimMessages({
   maxTokens: 10,
