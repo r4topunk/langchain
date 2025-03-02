@@ -9,6 +9,12 @@ import {
   Annotation,
 } from "@langchain/langgraph";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import {
+  SystemMessage,
+  HumanMessage,
+  AIMessage,
+  trimMessages,
+} from "@langchain/core/messages";
 
 const llm = new ChatGroq({
   model: "mixtral-8x7b-32768",
@@ -158,45 +164,111 @@ const GraphAnnotation = Annotation.Root({
   language: Annotation<string>(),
 });
 
-const callModel_3 = async (state: typeof GraphAnnotation.State) => {
-  const prompt = await promptTemplate_2.invoke(state);
+// const callModel_3 = async (state: typeof GraphAnnotation.State) => {
+//   const prompt = await promptTemplate_2.invoke(state);
+//   const response = await llm.invoke(prompt);
+//   return { messages: [response] };
+// };
+
+// const workflow_3 = new StateGraph(GraphAnnotation)
+//   .addNode("model", callModel_3)
+//   .addEdge(START, "model")
+//   .addEdge("model", END);
+
+// const app_3 = workflow_3.compile({ checkpointer: new MemorySaver() });
+
+// const config_4 = { configurable: { thread_id: uuidv4() } };
+// const input_6 = {
+//   messages: [
+//     {
+//       role: "user",
+//       content: "hi im bob",
+//     },
+//   ],
+//   language: "Spanish",
+// };
+// const output_7 = await app_3.invoke(input_6, config_4);
+// console.log(
+//   "output_7 =>",
+//   output_7.messages[output_7.messages.length - 1].content
+// );
+
+// const input_7 = {
+//   messages: [
+//     {
+//       role: "user",
+//       content: "what's my name?",
+//     },
+//   ],
+// };
+// const output_8 = await app_3.invoke(input_7, config_4);
+// console.log(
+//   "output_8 =>",
+//   output_8.messages[output_8.messages.length - 1].content
+// );
+
+const trimmer = trimMessages({
+  maxTokens: 10,
+  strategy: "last",
+  tokenCounter: (msgs) => msgs.length,
+  includeSystem: true,
+  allowPartial: false,
+  startOn: "human",
+});
+
+const messages = [
+  new SystemMessage("you're a good assistant"),
+  new HumanMessage("hi, I'm bob"),
+  new AIMessage("hi!"),
+  new HumanMessage("I like vanilla ice cream"),
+  new AIMessage("nice"),
+  new HumanMessage("what's 2 + 2"),
+  new AIMessage("4"),
+  new HumanMessage("thanks"),
+  new AIMessage("no problem!"),
+  new HumanMessage("having fun?"),
+  new AIMessage("yes!"),
+];
+// const trim = await trimmer.invoke(messages);
+// console.log("trim =>", trim);
+
+const callModel_4 = async (state: typeof GraphAnnotation.State) => {
+  const trimmedMessage = await trimmer.invoke(state.messages);
+  const prompt = await promptTemplate_2.invoke({
+    messages: trimmedMessage,
+    language: state.language,
+  });
   const response = await llm.invoke(prompt);
   return { messages: [response] };
 };
 
-const workflow_3 = new StateGraph(GraphAnnotation)
-  .addNode("model", callModel_3)
+const workflow_4 = new StateGraph(GraphAnnotation)
+  .addNode("model", callModel_4)
   .addEdge(START, "model")
   .addEdge("model", END);
 
-const app_3 = workflow_3.compile({ checkpointer: new MemorySaver() });
+const app_4 = workflow_4.compile({ checkpointer: new MemorySaver() });
 
-const config_4 = { configurable: { thread_id: uuidv4() } };
-const input_6 = {
-  messages: [
-    {
-      role: "user",
-      content: "hi im bob",
-    },
-  ],
-  language: "Spanish",
+const config_5 = { configurable: { thread_id: uuidv4() } };
+const input_8 = {
+  messages: [...messages, new HumanMessage("what is my name?")],
+  language: "english",
 };
-const output_7 = await app_3.invoke(input_6, config_4);
+
+const output_9 = await app_4.invoke(input_8, config_5);
 console.log(
-  "output_7 =>",
-  output_7.messages[output_7.messages.length - 1].content
+  "output_9 =>",
+  output_9.messages[output_9.messages.length - 1].content
 );
 
-const input_7 = {
-  messages: [
-    {
-      role: "user",
-      content: "what's my name?",
-    },
-  ],
+const config_6 = { configurable: { thread_id: uuidv4() } };
+const input_9 = {
+  messages: [...messages, new HumanMessage("What math problem did I ask?")],
+  language: "english",
 };
-const output_8 = await app_3.invoke(input_7, config_4);
+
+const output_10 = await app_4.invoke(input_9, config_6);
 console.log(
-  "output_8 =>",
-  output_8.messages[output_8.messages.length - 1].content
+  "output_10 =>",
+  output_10.messages[output_10.messages.length - 1].content
 );
