@@ -15,7 +15,11 @@ import {
   START,
   StateGraph,
 } from "@langchain/langgraph";
-import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
+import {
+  createReactAgent,
+  ToolNode,
+  toolsCondition,
+} from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import "cheerio";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
@@ -204,6 +208,26 @@ let inputs4 = {
   ],
 };
 for await (const step of await graphWithMemory.stream(inputs4, threadConfig)) {
+  const lastMessage = step.messages[step.messages.length - 1];
+  prettyPrint(lastMessage);
+  console.log("-----\n");
+}
+
+const agent = createReactAgent({ llm, tools: [retrieve] });
+const inputMessage = `What is the standard method for Task Decomposition?
+Once you the the answer, look up common extensions of that method.`;
+let inputs5 = {
+  messages: [
+    {
+      role: "user",
+      content: inputMessage,
+    },
+  ],
+};
+
+for await (const step of await agent.stream(inputs5, {
+  streamMode: "values",
+})) {
   const lastMessage = step.messages[step.messages.length - 1];
   prettyPrint(lastMessage);
   console.log("-----\n");
