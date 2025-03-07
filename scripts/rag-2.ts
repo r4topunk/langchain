@@ -10,6 +10,7 @@ import {
 import { tool } from "@langchain/core/tools";
 import {
   END,
+  MemorySaver,
   MessagesAnnotation,
   START,
   StateGraph,
@@ -166,6 +167,43 @@ let inputs2 = {
 for await (const step of await graph.stream(inputs2, {
   streamMode: "values",
 })) {
+  const lastMessage = step.messages[step.messages.length - 1];
+  prettyPrint(lastMessage);
+  console.log("-----\n");
+}
+
+const checkpointer = new MemorySaver();
+const graphWithMemory = graphBuilder.compile({ checkpointer });
+
+// Specify an ID for the thread
+const threadConfig = {
+  configurable: { thread_id: "abc123" },
+  streamMode: "values" as const,
+};
+
+let inputs3 = {
+  messages: [
+    {
+      role: "user",
+      content: "What is Task Decomposition?",
+    },
+  ],
+};
+for await (const step of await graphWithMemory.stream(inputs3, threadConfig)) {
+  const lastMessage = step.messages[step.messages.length - 1];
+  prettyPrint(lastMessage);
+  console.log("-----\n");
+}
+
+let inputs4 = {
+  messages: [
+    {
+      role: "user",
+      content: "Can you look up some common ways of doing it?",
+    },
+  ],
+};
+for await (const step of await graphWithMemory.stream(inputs4, threadConfig)) {
   const lastMessage = step.messages[step.messages.length - 1];
   prettyPrint(lastMessage);
   console.log("-----\n");
