@@ -13,7 +13,7 @@ import { ChatGroq } from "@langchain/groq";
 import "cheerio";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import {
   END,
@@ -22,9 +22,14 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 
-const llm = new ChatGroq({
-  model: "mistral-saba-24b",
-  temperature: 0.2,
+// const llm = new ChatGroq({
+//   model: "mistral-saba-24b",
+//   temperature: 0,
+// });
+
+const llm = new ChatOpenAI({
+  model: "gpt-4o-mini",
+  temperature: 0,
 });
 
 const embeddings = new OpenAIEmbeddings({
@@ -122,16 +127,16 @@ const generate = async (state: typeof MessagesAnnotation.State) => {
     ...conversationMessages,
   ];
 
-  const response = llm.invoke(prompt);
+  const response = await llm.invoke(prompt);
   return { messages: [response] };
 };
 
 const graphBuilder = new StateGraph(MessagesAnnotation)
-  .addNode("queryOrRepond", queryOrRespond)
+  .addNode("queryOrRespond", queryOrRespond)
   .addNode("tools", tools)
   .addNode("generate", generate)
-  .addEdge(START, "queryOrRepond")
-  .addConditionalEdges("queryOrRepond", toolsCondition, {
+  .addEdge(START, "queryOrRespond")
+  .addConditionalEdges("queryOrRespond", toolsCondition, {
     __end__: END,
     tools: "tools",
   })
@@ -141,7 +146,7 @@ const graphBuilder = new StateGraph(MessagesAnnotation)
 const graph = graphBuilder.compile();
 
 const prettyPrint = (message: BaseMessage) => {
-  let txt = `[${message.getType()}]: ${message.content}`;
+  let txt = `[${message.getType()}]\n${message.content}`;
   if ((isAIMessage(message) && message.tool_calls?.length) || 0 > 0) {
     const tool_calls = (message as AIMessage)?.tool_calls
       ?.map((tc) => `- ${tc.name}(${JSON.stringify(tc.args)})`)
