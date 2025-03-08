@@ -18,6 +18,8 @@
     "cheerio": "^1.0.0",
     "langchain": "^0.3.19",
     "pdf-parse": "^1.1.1",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.21",
     "uuid": "^11.1.0"
   }
 }
