@@ -1,3 +1,4 @@
+import { MemorySaver } from "@langchain/langgraph";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
@@ -80,15 +81,33 @@ const graphBuilder = new StateGraph({
   .addEdge("executeQuery", "generateAnswer")
   .addEdge("generateAnswer", END);
 
-const graph = graphBuilder.compile();
-
 const inputs = { question: "How many employees are there?" };
+
+const checkpointer = new MemorySaver();
+const graphWithInterrupt = graphBuilder.compile({
+  checkpointer,
+  interruptBefore: ["executeQuery"],
+});
+
+const threadConfig = {
+  configurable: { thread_id: "1" },
+  streamMode: "updates" as const,
+};
 
 console.log(inputs);
 console.log("\n====\n");
-for await (const step of await graph.stream(inputs, {
-  streamMode: "updates",
-})) {
+for await (const step of await graphWithInterrupt.stream(
+  inputs,
+  threadConfig
+)) {
+  console.log(step);
+  console.log("\n====\n");
+}
+
+// Will log when the graph is interrupted, after `executeQuery`.
+console.log("---GRAPH INTERRUPTED---");
+
+for await (const step of await graphWithInterrupt.stream(null, threadConfig)) {
   console.log(step);
   console.log("\n====\n");
 }
