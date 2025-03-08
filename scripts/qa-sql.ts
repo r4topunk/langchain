@@ -1,3 +1,5 @@
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { SqlToolkit } from "langchain/agents/toolkits/sql";
 import { MemorySaver } from "@langchain/langgraph";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
@@ -7,6 +9,8 @@ import { SqlDatabase } from "langchain/sql_db";
 import { QuerySqlTool } from "langchain/tools/sql";
 import { DataSource } from "typeorm";
 import { z } from "zod";
+import { prettyPrint } from "../functions/pretty-print";
+import { ChatOpenAI } from "@langchain/openai";
 
 const datasource = new DataSource({
   type: "sqlite",
@@ -27,8 +31,8 @@ const StateAnnotation = Annotation.Root({
   answer: Annotation<string>,
 });
 
-const llm = new ChatGroq({
-  model: "mixtral-8x7b-32768",
+const llm = new ChatOpenAI({
+  model: "gpt-4o-mini",
   temperature: 0,
 });
 
@@ -83,31 +87,91 @@ const graphBuilder = new StateGraph({
 
 const inputs = { question: "How many employees are there?" };
 
-const checkpointer = new MemorySaver();
-const graphWithInterrupt = graphBuilder.compile({
-  checkpointer,
-  interruptBefore: ["executeQuery"],
-});
+const runMemoryGraph = async () => {
+  const checkpointer = new MemorySaver();
+  const graphWithInterrupt = graphBuilder.compile({
+    checkpointer,
+    interruptBefore: ["executeQuery"],
+  });
 
-const threadConfig = {
-  configurable: { thread_id: "1" },
-  streamMode: "updates" as const,
+  const threadConfig = {
+    configurable: { thread_id: "1" },
+    streamMode: "updates" as const,
+  };
+
+  console.log(inputs);
+  console.log("\n====\n");
+  for await (const step of await graphWithInterrupt.stream(
+    inputs,
+    threadConfig
+  )) {
+    console.log(step);
+    console.log("\n====\n");
+  }
+
+  // Will log when the graph is interrupted, after `executeQuery`.
+  console.log("---GRAPH INTERRUPTED---");
+
+  for await (const step of await graphWithInterrupt.stream(
+    null,
+    threadConfig
+  )) {
+    console.log(step);
+    console.log("\n====\n");
+  }
 };
 
-console.log(inputs);
-console.log("\n====\n");
-for await (const step of await graphWithInterrupt.stream(
-  inputs,
-  threadConfig
-)) {
-  console.log(step);
-  console.log("\n====\n");
-}
+const runAgent = async () => {
+  const toolkit = new SqlToolkit(db, llm);
+  const tools = toolkit.getTools();
 
-// Will log when the graph is interrupted, after `executeQuery`.
-console.log("---GRAPH INTERRUPTED---");
+  const systemPromptTemplate = await pull<ChatPromptTemplate>(
+    "langchain-ai/sql-agent-system-prompt"
+  );
 
-for await (const step of await graphWithInterrupt.stream(null, threadConfig)) {
-  console.log(step);
-  console.log("\n====\n");
-}
+  const systemMessage = await systemPromptTemplate.format({
+    dialect: "SQLite",
+    top_k: 5,
+  });
+
+  const agent = createReactAgent({
+    llm,
+    tools,
+    stateModifier: systemMessage,
+  });
+
+  let inputs = {
+    messages: [
+      {
+        role: "user",
+        content: "Which country's customers spend the most?",
+      },
+    ],
+  };
+
+  // for await (const step of await agent.stream(inputs, {
+  //   streamMode: "values",
+  // })) {
+  //   const lastMessage = step.messages[step.messages.length - 1];
+  //   prettyPrint(lastMessage);
+  //   console.log("-----\n");
+  // }
+
+  let inputs_2 = {
+    messages: [
+      {
+        role: "user",
+        content: "Describre the playlistrack table",
+      },
+    ],
+  };
+
+  for await (const step of await agent.stream(inputs_2, {
+    streamMode: "values",
+  })) {
+    const lastMessage = step.messages[step.messages.length - 1];
+    prettyPrint(lastMessage);
+    console.log("-----\n");
+  }
+};
+await runAgent();
