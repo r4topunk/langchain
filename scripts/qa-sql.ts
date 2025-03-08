@@ -149,19 +149,19 @@ const runAgent = async () => {
     ],
   };
 
-  // for await (const step of await agent.stream(inputs, {
-  //   streamMode: "values",
-  // })) {
-  //   const lastMessage = step.messages[step.messages.length - 1];
-  //   prettyPrint(lastMessage);
-  //   console.log("-----\n");
-  // }
+  for await (const step of await agent.stream(inputs, {
+    streamMode: "values",
+  })) {
+    const lastMessage = step.messages[step.messages.length - 1];
+    prettyPrint(lastMessage);
+    console.log("-----\n");
+  }
 
   let inputs_2 = {
     messages: [
       {
         role: "user",
-        content: "Describre the playlistrack table",
+        content: "Describe the playlistrack table",
       },
     ],
   };
