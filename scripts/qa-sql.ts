@@ -1,3 +1,5 @@
+import { Document } from "@langchain/core/documents";
+import { createRetrieverTool } from "langchain/tools/retriever";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { SqlToolkit } from "langchain/agents/toolkits/sql";
 import { MemorySaver } from "@langchain/langgraph";
@@ -10,7 +12,8 @@ import { QuerySqlTool } from "langchain/tools/sql";
 import { DataSource } from "typeorm";
 import { z } from "zod";
 import { prettyPrint } from "../functions/pretty-print";
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
 
 const datasource = new DataSource({
   type: "sqlite",
@@ -121,19 +124,19 @@ const runMemoryGraph = async () => {
   }
 };
 
+const toolkit = new SqlToolkit(db, llm);
+const tools = toolkit.getTools();
+
+const systemPromptTemplate = await pull<ChatPromptTemplate>(
+  "langchain-ai/sql-agent-system-prompt"
+);
+
+const systemMessage = await systemPromptTemplate.format({
+  dialect: "SQLite",
+  top_k: 5,
+});
+
 const runAgent = async () => {
-  const toolkit = new SqlToolkit(db, llm);
-  const tools = toolkit.getTools();
-
-  const systemPromptTemplate = await pull<ChatPromptTemplate>(
-    "langchain-ai/sql-agent-system-prompt"
-  );
-
-  const systemMessage = await systemPromptTemplate.format({
-    dialect: "SQLite",
-    top_k: 5,
-  });
-
   const agent = createReactAgent({
     llm,
     tools,
@@ -174,4 +177,79 @@ const runAgent = async () => {
     console.log("-----\n");
   }
 };
-await runAgent();
+
+const runVectorAgent = async () => {
+  const queryAsList = async (
+    database: any,
+    query: string
+  ): Promise<string[]> => {
+    const res: Array<{ [key: string]: string }> = JSON.parse(
+      await database.run(query)
+    )
+      .flat()
+      .filter((el: any) => el != null);
+
+    const justValues: Array<string> = res.map((item) =>
+      Object.values(item)[0]
+        .replace(/\b\d+\b/g, "")
+        .trim()
+    );
+    return justValues;
+  };
+
+  let artists = await queryAsList(db, "SELECT Name FROM Artist");
+  let albums = await queryAsList(db, "SELECT Title FROM Album");
+  let properNouns = artists.concat(albums);
+
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-3-large",
+  });
+
+  const vectorStore = new MemoryVectorStore(embeddings);
+
+  const documents = properNouns.map(
+    (text) => new Document({ pageContent: text })
+  );
+  await vectorStore.addDocuments(documents);
+
+  const retriever = vectorStore.asRetriever(5);
+
+  const retrieverTool = createRetrieverTool(retriever, {
+    name: "searchProperNouns",
+    description:
+      "Use to look up values to filter on. Input is an approximate spelling " +
+      "of the proper noun, output is valid proper nouns. Use the noun most " +
+      "similar to the search.",
+  });
+
+  let suffix =
+    "If you need to filter on a proper noun like a Name, you must ALWAYS first look up " +
+    "the filter value using the 'searchProperNouns' tool! Do not try to " +
+    "guess at the proper name - use this function to find similar ones.";
+
+  const systemPrompt = systemMessage + suffix;
+
+  const updatedTools = tools.concat(retrieverTool);
+
+  const agent = createReactAgent({
+    llm,
+    tools: updatedTools,
+    prompt: systemPrompt,
+  });
+
+  const input = {
+    messages: [
+      { role: "user", content: "How many albums does alis in chain have?" },
+    ],
+  };
+
+  for await (const step of await agent.stream(input, {
+    streamMode: "values",
+  })) {
+    const lastMessage = step.messages[step.messages.length - 1];
+    prettyPrint(lastMessage);
+    console.log("\n====\n");
+  }
+};
+
+await runVectorAgent();
