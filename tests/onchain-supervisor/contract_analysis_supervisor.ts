@@ -519,44 +519,6 @@ IMPORTANT:
 const checkpointer = new MemorySaver();
 const app = workflow.compile({ checkpointer });
 
-// Helper function to extract the final report from results
-function extractFinalReport(result: any): string {
-  // Find the last message from report_generation_agent or the supervisor
-  const messages = result.messages || [];
-
-  // Look for the report in the last few messages, starting from the end
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const message = messages[i];
-    const content = message.content || "";
-
-    // Look for markdown report format or report content indicators
-    if (
-      content.includes("# Contract Analysis Report") ||
-      (message.role === "assistant" && content.length > 500)
-    ) {
-      return content;
-    }
-
-    // Check tool calls for report generation
-    if (message.tool_calls && message.tool_calls.length > 0) {
-      for (const call of message.tool_calls) {
-        if (call.name === "generate_report" && call.result) {
-          return call.result;
-        }
-      }
-    }
-  }
-
-  // If no specific report found, return the last message content
-  if (messages.length > 0) {
-    return (
-      messages[messages.length - 1].content || "No report found in results"
-    );
-  }
-
-  return "No results found";
-}
-
 // Function to run the analysis with improved error handling
 export async function analyzeContract(contractAddress: string) {
   // Validate address format
@@ -578,17 +540,7 @@ export async function analyzeContract(contractAddress: string) {
 
   try {
     const result = await app.invoke(input);
-    const report = extractFinalReport(result);
-
-    // Print the final report
-    console.log("\n\n===== FINAL CONTRACT ANALYSIS REPORT =====\n");
-    console.log(report);
-    console.log("\n=========== END OF REPORT ===========\n");
-
-    return {
-      result,
-      report,
-    };
+    return result;
   } catch (error) {
     console.error("Error during contract analysis:", error);
     throw error;
@@ -622,8 +574,6 @@ export async function analyzeContractWithStream(
     setTimeout(() => reject(new Error("Analysis timed out")), timeoutMs);
   });
 
-  let finalReport = "";
-
   try {
     // Start the analysis stream
     const streamPromise = app.stream(input, {
@@ -641,30 +591,7 @@ export async function analyzeContractWithStream(
       const lastMessage = step.messages[step.messages.length - 1];
       prettyPrint(lastMessage);
       console.log("-----\n");
-
-      // Store the content of the last message for later extraction
-      if (lastMessage.content && typeof lastMessage.content === "string") {
-        if (
-          lastMessage.content.includes("# Contract Analysis Report") ||
-          lastMessage.content.length > 500
-        ) {
-          finalReport = lastMessage.content;
-        }
-      }
     }
-
-    // Print the final report after streaming completes
-    if (finalReport) {
-      console.log("\n\n===== FINAL CONTRACT ANALYSIS REPORT =====\n");
-      console.log(finalReport);
-      console.log("\n=========== END OF REPORT ===========\n");
-    } else {
-      console.log(
-        "\nNo detailed report found in the output. Please check the workflow logs above."
-      );
-    }
-
-    return finalReport;
   } catch (error) {
     console.error("Error during contract analysis:", error);
     throw error;
@@ -689,14 +616,7 @@ function prettyPrint(message: any) {
 // Example usage
 if (require.main === module) {
   // Run analysis for a sample contract
-  analyzeContractWithStream("0x1234567890123456789012345678901234567890")
-    .then((report) => {
-      if (report) {
-        // Optionally save the report to a file
-        const fs = require("fs");
-        fs.writeFileSync("contract_analysis_report.md", report);
-        console.log("Report saved to contract_analysis_report.md");
-      }
-    })
-    .catch(console.error);
+  analyzeContractWithStream("0x1234567890123456789012345678901234567890").catch(
+    console.error
+  );
 }
