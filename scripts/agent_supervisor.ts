@@ -3,6 +3,7 @@ import { createSupervisor } from "@langchain/langgraph-supervisor";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import { prettyPrint } from "../functions/pretty-print";
 
 const model = new ChatOpenAI({ modelName: "gpt-4o" });
 
@@ -72,11 +73,20 @@ const workflow = createSupervisor({
 
 // Compile and run
 const app = workflow.compile();
-const result = await app.invoke({
+const input = {
   messages: [
     {
       role: "user",
       content: "what's the combined headcount of the FAANG companies in 2024??",
     },
   ],
-});
+};
+// const result = await app.invoke(input);
+
+for await (const step of await app.stream(input, {
+  streamMode: "values",
+})) {
+  const lastMessage = step.messages[step.messages.length - 1];
+  prettyPrint(lastMessage);
+  console.log("-----\n");
+}
