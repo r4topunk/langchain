@@ -72,7 +72,7 @@ const workflow = createSupervisor({
 });
 
 // Compile and run
-const app = workflow.compile();
+export const app = workflow.compile();
 const input = {
   messages: [
     {
@@ -83,10 +83,10 @@ const input = {
 };
 // const result = await app.invoke(input);
 
-for await (const step of await app.stream(input, {
-  streamMode: "values",
-})) {
-  const lastMessage = step.messages[step.messages.length - 1];
-  prettyPrint(lastMessage);
-  console.log("-----\n");
-}
+// for await (const step of await app.stream(input, {
+//   streamMode: "values",
+// })) {
+//   const lastMessage = step.messages[step.messages.length - 1];
+//   prettyPrint(lastMessage);
+//   console.log("-----\n");
+// }

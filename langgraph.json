@@ -1,0 +1,7 @@
+{
+  "graphs": {
+    "graph": "./scripts/agent_supervisor.ts:app"
+  },
+  "env": ".env",
+  "dockerfile_lines": []
+}
