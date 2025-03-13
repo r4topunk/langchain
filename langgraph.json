@@ -1,6 +1,7 @@
 {
   "graphs": {
-    "graph": "./scripts/agent_supervisor.ts:app"
+    "agent_supervisor": "./scripts/agent_supervisor.ts:app",
+    "graph": "./tests/onchain-supervisor/contract_analysis_supervisor.ts:app"
   },
   "env": ".env",
   "dockerfile_lines": []

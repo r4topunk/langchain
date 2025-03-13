@@ -518,7 +518,7 @@ IMPORTANT:
 
 // Compile the workflow with memory
 const checkpointer = new MemorySaver();
-const app = workflow.compile({ checkpointer });
+export const app = workflow.compile({ checkpointer });
 
 // Function to run the analysis with improved error handling
 export async function analyzeContract(contractAddress: string) {
@@ -615,9 +615,9 @@ function prettyPrint(message: any) {
 }
 
 // Example usage
-if (require.main === module) {
-  // Run analysis for a sample contract
-  analyzeContractWithStream("0x1234567890123456789012345678901234567890").catch(
-    console.error
-  );
-}
+// if (require.main === module) {
+//   // Run analysis for a sample contract
+//   analyzeContractWithStream("0x1234567890123456789012345678901234567890").catch(
+//     console.error
+//   );
+// }
