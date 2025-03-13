@@ -20,6 +20,9 @@ importers:
       '@langchain/langgraph':
         specifier: ^0.2.55
         version: 0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))
+      '@langchain/langgraph-supervisor':
+        specifier: ^0.0.9
+        version: 0.0.9(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph@0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))))
       '@langchain/langgraph-swarm':
         specifier: ^0.0.3
         version: 0.0.3(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph@0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))))
@@ -486,6 +489,13 @@ packages:
         optional: true
       react:
         optional: true
+
+  '@langchain/langgraph-supervisor@0.0.9':
+    resolution: {integrity: sha512-XtJZIqg4EinI5S31wxX+D+xFYLO4vcX/POaQRv3utyecdG37SaY7rdQddFcv6AJPd7z2+uAhPAkp/3z6wJ/IVw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': ^0.3.40
+      '@langchain/langgraph': ^0.2.53
 
   '@langchain/langgraph-swarm@0.0.3':
     resolution: {integrity: sha512-6ctP1KGj344KXeY5c08LzvfayCWPA2I52pw7a6t4tcaQ3Y39h3aDvYl94wEqxv20KXIccdzvtAFX1ndxRBrP2Q==}
@@ -1948,6 +1958,13 @@ snapshots:
       uuid: 9.0.1
     optionalDependencies:
       '@langchain/core': 0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))
+
+  '@langchain/langgraph-supervisor@0.0.9(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph@0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))))':
+    dependencies:
+      '@langchain/core': 0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))
+      '@langchain/langgraph': 0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))
+      uuid: 10.0.0
+      zod: 3.24.2
 
   '@langchain/langgraph-swarm@0.0.3(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph@0.2.55(@langchain/core@0.3.42(openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.24.2))))':
     dependencies:
