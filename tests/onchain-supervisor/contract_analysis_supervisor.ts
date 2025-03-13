@@ -509,6 +509,7 @@ IMPORTANT:
 - Track the overall progress and ensure all necessary data is collected and analyzed
 - Make sure each agent has the required input data before assigning tasks
 - Maintain context throughout the workflow to ensure a comprehensive final report`,
+  supervisorName: "God",
 });
 
 // ==========================================
