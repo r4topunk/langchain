@@ -395,39 +395,26 @@ const updateProgress = tool(
 // AGENT CREATION
 // ==========================================
 
-// Data Fetcher Agents
-const farcasterAgent = createReactAgent({
+// Consolidated Data Fetcher Agent
+const dataFetcherAgent = createReactAgent({
   llm: model,
-  tools: [farcasterFetch, updateProgress],
-  name: "farcaster_agent",
-  prompt: `You are a specialized agent for retrieving social data from Farcaster about specific contracts.
+  tools: [farcasterFetch, coingeckoFetch, etherscanFetch, updateProgress],
+  name: "data_fetcher_agent",
+  prompt: `You are a specialized agent for retrieving data about crypto contracts from multiple sources.
 
 IMPORTANT: 
 1. First validate the contract address format (should be 0x followed by 40 hex characters)
 2. Update the progress of your work using update_progress
-3. Fetch social data using farcaster_fetch
-4. Return comprehensive social sentiment information
+3. Fetch data from all available sources:
+   - Social data using farcaster_fetch
+   - Market data using coingecko_fetch
+   - On-chain data using etherscan_fetch
+4. Return all data in an organized format for analysis
 
-If you encounter any errors, explain clearly what went wrong.`,
+If you encounter any errors with any data source, explain clearly what went wrong.`,
 });
 
-const coingeckoAgent = createReactAgent({
-  llm: model,
-  tools: [coingeckoFetch],
-  name: "coingecko_agent",
-  prompt:
-    "You are a specialized agent for retrieving market data from Coingecko about crypto tokens. Given a contract address, fetch relevant market metrics and price data.",
-});
-
-const etherscanAgent = createReactAgent({
-  llm: model,
-  tools: [etherscanFetch],
-  name: "etherscan_agent",
-  prompt:
-    "You are a specialized agent for retrieving on-chain data from Etherscan about Ethereum contracts. Given a contract address, fetch relevant contract details and transaction data.",
-});
-
-// Enhanced analysis agent with request capability
+// Analysis agents
 const socialAnalysisAgent = createReactAgent({
   llm: model,
   tools: [analyzeSocialSentiment, requestAdditionalData, updateProgress],
@@ -482,9 +469,7 @@ const reportGenerationAgent = createReactAgent({
 // Create supervisor workflow with enhanced prompt
 const workflow = createSupervisor({
   agents: [
-    farcasterAgent,
-    coingeckoAgent,
-    etherscanAgent,
+    dataFetcherAgent,
     socialAnalysisAgent,
     marketAnalysisAgent,
     onChainAnalysisAgent,
@@ -496,7 +481,7 @@ const workflow = createSupervisor({
 
 Your workflow is:
 1. Receive a contract address
-2. Delegate data collection to three fetcher agents: farcaster_agent, coingecko_agent, and etherscan_agent
+2. Delegate data collection to data_fetcher_agent to collect social, market and on-chain data
 3. Once data is collected, delegate analysis to three analyzer agents: social_analysis_agent, market_analysis_agent, and on_chain_analysis_agent
 4. After all analyses are complete, delegate evaluation to the opportunity_evaluation_agent
 5. Finally, instruct report_generation_agent to create the final markdown report using all collected data and analysis
