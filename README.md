@@ -63,6 +63,32 @@ This repository follows tutorials from the [LangChain documentation](https://js.
 - Working with structured outputs
 - Memory and state management
 
+## Featured Projects
+
+### Crypto Contract Analysis Supervisor
+
+The repository includes an advanced implementation of a multi-agent system for comprehensive crypto contract analysis:
+
+- **Architecture**: Uses LangGraph's supervisor pattern to coordinate specialized agents
+- **Workflow**:
+
+  1. Data collection from multiple sources (social, market, on-chain)
+  2. Multi-faceted analysis through specialized agents
+  3. Opportunity evaluation based on combined insights
+  4. Detailed report generation
+
+- **Key Components**:
+  - **Data Fetcher Agent**: Retrieves data from Farcaster, Coingecko, and Etherscan
+  - **Analysis Agents**: Separate agents for social, market, and on-chain analysis
+  - **Evaluation Agent**: Assesses investment opportunity based on all analyses
+  - **Report Generation Agent**: Creates comprehensive markdown reports
+
+To run the contract analysis:
+
+```bash
+bun run tests/onchain-supervisor/run_contract_analysis.ts
+```
+
 ## Resources
 
 - [LangChain Documentation](https://js.langchain.com/docs/)
