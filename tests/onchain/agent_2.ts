@@ -1,13 +1,13 @@
-import { v4 as uuidv4 } from "uuid";
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { HumanMessage } from "@langchain/core/messages";
 import { MemorySaver } from "@langchain/langgraph";
+import { createHandoffTool, createSwarm } from "@langchain/langgraph-swarm";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
-import { FarcasterSearchTool } from "./tools/farcaster_search";
 import { writeFile } from "fs/promises";
 import path from "path";
-import { createSwarm, createHandoffTool } from "@langchain/langgraph-swarm";
+import { v4 as uuidv4 } from "uuid";
+import { FarcasterSearchTool } from "./tools/farcaster_search";
 
 // Define the token to analyze
 const TOKEN = "0xf1fc9580784335b2613c1392a530c1aa2a69ba3d";
